@@ -10,8 +10,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@Validated
 @RestController
 @RequestMapping("v1/advertisements")
 @RequiredArgsConstructor
@@ -44,7 +48,7 @@ public class AdvertisementController {
     })
     public void createAdvertisement(
             @Parameter(description = "Модель для создания данных")
-            @RequestBody AdvertisementRequest advertisementRequest
+            @RequestBody @Valid AdvertisementRequest advertisementRequest
     ) {
         advertisementService.createAdvertisement(advertisementRequest);
     }
@@ -58,7 +62,7 @@ public class AdvertisementController {
     })
     public AdvertisementResponse getAdvertisement(
             @Parameter(description = "Идентификатор объявления")
-            @PathVariable Long id) {
+            @PathVariable @Positive Long id) {
         return advertisementService.getAdvertisementById(id);
     }
 
