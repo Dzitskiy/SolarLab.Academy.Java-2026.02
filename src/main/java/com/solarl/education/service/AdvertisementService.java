@@ -1,26 +1,26 @@
 package com.solarl.education.service;
 
+import com.solarl.education.entity.Advertisement;
+import com.solarl.education.entity.Client;
+import com.solarl.education.mapper.AdvertisementMapper;
 import com.solarl.education.repository.AdvertisementRepository;
+import com.solarl.education.repository.ClientRepository;
 import com.solarl.education.request.AdvertisementRequest;
 import com.solarl.education.response.AdvertisementResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class AdvertisementService {
 
-    private ObjectProvider<AdvertisementRepository> advertisementRepositoryProvider;
-
-    @Lazy
-    @Autowired
-    public void setAdvertisementRepository(ObjectProvider<AdvertisementRepository> advertisementRepositoryProvider) {
-        this.advertisementRepositoryProvider = advertisementRepositoryProvider;
-    }
+    private final AdvertisementRepository advertisementRepository;
+    private final ClientRepository clientRepository;
+    private final AdvertisementMapper advertisementMapper;
 
     @PostConstruct
     public void init() {
@@ -28,23 +28,29 @@ public class AdvertisementService {
     }
 
     public void createAdvertisement(AdvertisementRequest advertisementRequest) {
-        AdvertisementRepository advertisementRepository = advertisementRepositoryProvider.getObject();
-        advertisementRepository.doSomething();
-        advertisementRepository = advertisementRepositoryProvider.getObject();
-        advertisementRepository.doSomething();
         System.out.println("Создаем объявление: " + advertisementRequest);
+        if (advertisementRequest == null) {
+            return;
+        }
+        Client client = null;
+        if (advertisementRequest.getClientId() != null) {
+            Optional<Client> optClient = clientRepository.findById(advertisementRequest.getClientId());
+            client = optClient.orElse(null);
+        }
+
+        advertisementRepository.save(
+                advertisementMapper.toAdvertisement(advertisementRequest, client)
+        );
     }
 
     public AdvertisementResponse getAdvertisementById(Long id) {
         System.out.println("Получаем объявление по id: " + id);
-        return AdvertisementResponse.builder()
-                .name("Kia")
-                .description("Super car")
-                .category("Car")
-                .address("Sevastopol")
-                .id(id)
-                .cost(10)
-                .build();
+        Optional<Advertisement> advertisementOptional = advertisementRepository.findById(id);
+        if (advertisementOptional.isEmpty()) {
+            return null;
+        }
+        Advertisement advertisement = advertisementOptional.get();
+        return advertisementMapper.toAdvertisementResponse(advertisement);
     }
 
     public AdvertisementResponse updateAdvertisementById(Long id, AdvertisementRequest advertisementRequest) {
@@ -52,7 +58,7 @@ public class AdvertisementService {
         return AdvertisementResponse.builder()
                 .name(advertisementRequest.getName())
                 .description(advertisementRequest.getDescription())
-                .category(advertisementRequest.getCategory())
+                .category(advertisementRequest.getCategory().name())
                 .address(advertisementRequest.getAddress())
                 .subcategory(advertisementRequest.getSubcategory())
                 .build();

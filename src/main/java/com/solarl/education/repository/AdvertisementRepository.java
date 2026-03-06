@@ -1,36 +1,15 @@
 package com.solarl.education.repository;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
+import com.solarl.education.entity.Advertisement;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
+import java.util.List;
 
-@Lazy
 @Repository
-@Scope("session")
-public class AdvertisementRepository {
+public interface AdvertisementRepository extends JpaRepository<Advertisement, Long> {
 
-    private final UUID id;
-
-    public AdvertisementRepository() {
-        this.id = UUID.randomUUID();
-        System.out.println("Бин загружен: " + this.id);
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Создали бин AdvertisementRepository: " + id);
-    }
-
-    public void doSomething() {
-        System.out.println("Вызвали метод репозитория: " + id);
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Удаляем бин AdvertisementRepository");
-    }
+    @Query("select a from Advertisement a join fetch a.client")
+    List<Advertisement> findAll();
 }
