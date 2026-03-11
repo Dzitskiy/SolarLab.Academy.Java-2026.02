@@ -1,6 +1,7 @@
 package com.solarl.education.controller;
 
 import com.solarl.education.request.ClientRequest;
+import com.solarl.education.response.ClientView;
 import com.solarl.education.service.ClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,24 +38,23 @@ public class ClientController {
             @ApiResponse(responseCode = "500", description = "Ошибка работы сервиса")
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public void createClient(
+    public ClientView createClient(
             @Parameter(description = "Запрос на отправку уведомления")
             @RequestBody @Valid ClientRequest clientRequest) {
-        clientService.createClient(clientRequest);
-
+        return clientService.createClient(clientRequest);
     }
 
     @GetMapping("{id}")
-    @Operation(summary = "Получение объявления")
+    @Operation(summary = "Получение клиента")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успех"),
             @ApiResponse(responseCode = "400", description = "Неверно переданные данные"),
             @ApiResponse(responseCode = "500", description = "Ошибка работы сервиса")
     })
-    public void getAdvertisement(
-            @Parameter(description = "Идентификатор объявления")
+    public ClientView getClient(
+            @Parameter(description = "Идентификатор клиента")
             @PathVariable @PositiveOrZero Long id) {
-        clientService.getClient(id);
+        return clientService.getClient(id);
     }
 
 }

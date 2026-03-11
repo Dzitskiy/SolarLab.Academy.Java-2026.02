@@ -39,8 +39,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--client-id",
         type=int,
-        default=None,
-        help="Optional client id to attach to advertisement create scenario.",
+        default=1,
+        help="Client id for GET client and advertisement create scenarios. Default: 1",
     )
     parser.add_argument(
         "--timeout",
@@ -94,6 +94,7 @@ def print_scenario_header(name: str, method: str, url: str) -> None:
 def build_scenarios(base_url: str, advertisement_id: int, client_id: int | None) -> list[Scenario]:
     suffix = str(int(time.time()))
     now = datetime.now().replace(microsecond=0).isoformat()
+    resolved_client_id = client_id if client_id is not None else 1
 
     valid_client = {
         "name": f"Client{suffix}",
@@ -114,7 +115,7 @@ def build_scenarios(base_url: str, advertisement_id: int, client_id: int | None)
         "subcategory": "SMOKE",
         "cost": 100,
         "address": "Test street 1",
-        "clientId": client_id,
+        "clientId": resolved_client_id,
         "description": "Good item",
         "createDateTime": now,
     }
@@ -124,7 +125,7 @@ def build_scenarios(base_url: str, advertisement_id: int, client_id: int | None)
         "subcategory": "UPDATED",
         "cost": 150,
         "address": "Updated street 2",
-        "clientId": client_id,
+        "clientId": resolved_client_id,
         "description": "Updated description",
         "createDateTime": now,
     }
@@ -136,6 +137,12 @@ def build_scenarios(base_url: str, advertisement_id: int, client_id: int | None)
             path="/v1/clients",
             body=valid_client,
             expected_statuses=(201,),
+        ),
+        Scenario(
+            name="Get client by configured id",
+            method="GET",
+            path=f"/v1/clients/{resolved_client_id}",
+            expected_statuses=(200,),
         ),
         Scenario(
             name="Create client (invalid lowercase name)",
