@@ -19,10 +19,23 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/master
+          jwk-set-uri: http://localhost:9090/realms/master/protocol/openid-connect/certs
 
 logging:
   level:
     org.springframework: ${LOGGING_LEVEL_SPRING:INFO}
+    org.springframework.security: DEBUG
+
+jwt:
+  auth:
+    converter:
+      resource-id: account
+      principle-attribute: preferred_username
 
 notification:
   telegram: false
