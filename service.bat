@@ -23,6 +23,7 @@ if errorlevel 1 exit /b 1
 
 if /I "%ACTION%"=="assemble" goto :assemble
 if /I "%ACTION%"=="test" goto :test
+if /I "%ACTION%"=="check" goto :check
 if /I "%ACTION%"=="build" goto :build
 if /I "%ACTION%"=="run" goto :run
 
@@ -51,6 +52,11 @@ exit /b %ERRORLEVEL%
 :test
 echo [INFO] Running Gradle task: test
 call :run_gradle test %ACTION_ARGS%
+exit /b %ERRORLEVEL%
+
+:check
+echo [INFO] Running Gradle task: check
+call :run_gradle check %ACTION_ARGS%
 exit /b %ERRORLEVEL%
 
 :build
@@ -163,6 +169,7 @@ echo   service.bat compose-up [docker-compose-options]
 echo   service.bat compose-down [docker-compose-options]
 echo   service.bat assemble [gradle-options]
 echo   service.bat test [gradle-options]
+echo   service.bat check [gradle-options]
 echo   service.bat build [gradle-options]
 echo   service.bat run [gradle-options]
 echo.
@@ -171,6 +178,7 @@ echo   service.bat compose-up
 echo   service.bat compose-down
 echo   service.bat build
 echo   service.bat test --info
+echo   service.bat check
 echo   service.bat run --args="--spring.profiles.active=local"
 exit /b 0
 
