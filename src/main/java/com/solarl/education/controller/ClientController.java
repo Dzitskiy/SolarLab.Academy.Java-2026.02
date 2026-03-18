@@ -35,7 +35,7 @@ public class ClientController {
     private final ClientService clientService;
 
     @PostMapping()
-    @PreAuthorize("hasRole('create_entity')")
+    //@PreAuthorize("hasRole('create_entity')")
     @Operation(summary = "Создание нового клиента")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Успех"),
@@ -51,7 +51,7 @@ public class ClientController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("hasRole('read_entity')")
+    //@PreAuthorize("hasRole('read_entity')")
     @Operation(summary = "Получение клиента")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успех"),
