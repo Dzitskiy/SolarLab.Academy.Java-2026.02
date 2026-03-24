@@ -1,5 +1,6 @@
 package com.solarl.education.controller;
 
+import com.solarl.education.enums.CategoryEnum;
 import com.solarl.education.request.AdvertisementRequest;
 import com.solarl.education.response.AdvertisementResponse;
 import com.solarl.education.service.AdvertisementService;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Validated
 @RestController
 @RequestMapping("v1/advertisements")
@@ -46,11 +49,37 @@ public class AdvertisementController {
             @ApiResponse(responseCode = "400", description = "неверно переданные данные"),
             @ApiResponse(responseCode = "500", description = "Ошибка работы сервиса")
     })
-    public void createAdvertisement(
+    public AdvertisementResponse createAdvertisement(
             @Parameter(description = "Модель для создания данных")
             @RequestBody @Valid AdvertisementRequest advertisementRequest
     ) {
-        advertisementService.createAdvertisement(advertisementRequest);
+        return advertisementService.createAdvertisement(advertisementRequest);
+    }
+
+    @PostMapping("basket")
+    @Operation(summary = "Создание объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Создано"),
+            @ApiResponse(responseCode = "400", description = "неверно переданные данные"),
+            @ApiResponse(responseCode = "500", description = "Ошибка работы сервиса")
+    })
+    public AdvertisementResponse addAdvertisementToBasket(
+            @Parameter(description = "Модель для создания данных")
+            @RequestBody Long id) {
+        return advertisementService.addAdvertisementToBasket(id);
+    }
+
+    @PostMapping("basket/pay")
+    @Operation(summary = "Создание объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Создано"),
+            @ApiResponse(responseCode = "400", description = "неверно переданные данные"),
+            @ApiResponse(responseCode = "500", description = "Ошибка работы сервиса")
+    })
+    public List<AdvertisementResponse> payPurchasesFromBasket(
+            @Parameter(description = "Модель для создания данных")
+            @RequestBody List<Long> ids) {
+        return advertisementService.payPurchasesFromBasket(ids);
     }
 
     @GetMapping("{id}")
@@ -64,6 +93,21 @@ public class AdvertisementController {
             @Parameter(description = "Идентификатор объявления")
             @PathVariable @Positive Long id) {
         return advertisementService.getAdvertisementById(id);
+    }
+
+    @GetMapping("{category}/{cost}")
+    @Operation(summary = "Получение объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Создано"),
+            @ApiResponse(responseCode = "400", description = "неверно переданные данные"),
+            @ApiResponse(responseCode = "500", description = "Ошибка работы сервиса")
+    })
+    public List<AdvertisementResponse> getAdvertisementsByCategoryAndCost(
+            @Parameter(description = "Идентификатор объявления")
+            @PathVariable CategoryEnum category,
+            @Parameter(description = "Идентификатор объявления")
+            @PathVariable @Positive Integer cost) {
+        return advertisementService.getAdvertisementsByCategoryAndCost(category, cost);
     }
 
     @PutMapping("{id}")

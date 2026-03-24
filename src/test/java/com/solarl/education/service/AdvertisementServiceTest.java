@@ -42,7 +42,7 @@ class AdvertisementServiceTest {
         advertisementService.createAdvertisement(null);
 
         verify(clientRepository, never()).findById(org.mockito.ArgumentMatchers.anyLong());
-        verify(advertisementMapper, never()).toAdvertisement(org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull());
+        verify(advertisementMapper, never()).toAdvertisementWithClient(org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull());
         verify(advertisementRepository, never()).save(org.mockito.ArgumentMatchers.any(Advertisement.class));
     }
 
@@ -52,12 +52,12 @@ class AdvertisementServiceTest {
         request.setClientId(null);
         Advertisement advertisement = new Advertisement();
 
-        when(advertisementMapper.toAdvertisement(request, null)).thenReturn(advertisement);
+        when(advertisementMapper.toAdvertisementWithClient(request, null)).thenReturn(advertisement);
 
         advertisementService.createAdvertisement(request);
 
         verify(clientRepository, never()).findById(org.mockito.ArgumentMatchers.anyLong());
-        verify(advertisementMapper).toAdvertisement(request, null);
+        verify(advertisementMapper).toAdvertisementWithClient(request, null);
         verify(advertisementRepository).save(advertisement);
     }
 
@@ -68,12 +68,12 @@ class AdvertisementServiceTest {
         Advertisement advertisement = new Advertisement();
 
         when(clientRepository.findById(15L)).thenReturn(Optional.of(client));
-        when(advertisementMapper.toAdvertisement(request, client)).thenReturn(advertisement);
+        when(advertisementMapper.toAdvertisementWithClient(request, client)).thenReturn(advertisement);
 
         advertisementService.createAdvertisement(request);
 
         verify(clientRepository).findById(15L);
-        verify(advertisementMapper).toAdvertisement(request, client);
+        verify(advertisementMapper).toAdvertisementWithClient(request, client);
         verify(advertisementRepository).save(advertisement);
     }
 
@@ -83,12 +83,12 @@ class AdvertisementServiceTest {
         Advertisement advertisement = new Advertisement();
 
         when(clientRepository.findById(15L)).thenReturn(Optional.empty());
-        when(advertisementMapper.toAdvertisement(request, null)).thenReturn(advertisement);
+        when(advertisementMapper.toAdvertisementWithClient(request, null)).thenReturn(advertisement);
 
         advertisementService.createAdvertisement(request);
 
         verify(clientRepository).findById(15L);
-        verify(advertisementMapper).toAdvertisement(request, null);
+        verify(advertisementMapper).toAdvertisementWithClient(request, null);
         verify(advertisementRepository).save(advertisement);
     }
 

@@ -37,6 +37,10 @@ dependencies {
     compileOnly 'org.mapstruct:mapstruct'
     annotationProcessor 'org.mapstruct:mapstruct-processor'
 
+    //Caching
+    implementation 'org.springframework.boot:spring-boot-starter-cache:3.1.12'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+
     //Flyway
     implementation 'org.flywaydb:flyway-core'
 

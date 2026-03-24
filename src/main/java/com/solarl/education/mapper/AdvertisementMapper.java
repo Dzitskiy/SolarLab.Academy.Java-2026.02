@@ -17,7 +17,9 @@ public interface AdvertisementMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "name", source = "advertisementRequest.name")
     @Mapping(target = "client", source = "client")
-    Advertisement toAdvertisement(AdvertisementRequest advertisementRequest, Client client);
+    Advertisement toAdvertisementWithClient(AdvertisementRequest advertisementRequest, Client client);
+
+    Advertisement toAdvertisement(AdvertisementRequest advertisementRequest);
 
     AdvertisementResponse toAdvertisementResponse(Advertisement advertisement);
 
