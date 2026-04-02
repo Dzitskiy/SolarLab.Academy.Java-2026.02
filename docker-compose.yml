@@ -11,19 +11,46 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d solarl"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   keycloak:
     container_name: keycloak_demo
     image: quay.io/keycloak/keycloak:25.0.5
+    restart: always
     ports:
-      - 9090:8080
+      - "9090:8080"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: password
     volumes:
       - keycloak_data:/opt/keycloak/data
     command:
-      - 'start-dev'
+      - start-dev
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: education_app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    environment:
+      PORT: 9080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/solarl
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/master
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/master/protocol/openid-connect/certs
+    ports:
+      - "9080:9080"
 
 volumes:
   postgres_data:

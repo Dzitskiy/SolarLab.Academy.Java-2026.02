@@ -1,0 +1,168 @@
+﻿# SolarLab Academy Java Project - Deployment Guide
+
+## 1. �������� �������
+
+������ ������������ ����� backend-������ �� **Spring Boot 3 (Java 21)** � REST API ��� ������ � ��������� � ������������.
+
+�������� ����������:
+- Spring Boot Web
+- Spring Data JPA
+- PostgreSQL
+- Flyway (�������� ��)
+- Spring Security OAuth2 Resource Server
+- Keycloak (��������� ��������� JWT)
+- MapStruct
+- JUnit + Testcontainers + ArchUnit + JaCoCo
+
+�������� ���� � �������:
+- `src/main/java` - ������-������ ����������
+- `src/main/resources/application.yml` - ������������ ����������
+- `src/main/resources/db/migration` - SQL-�������� Flyway
+- `docker-compose.yml` - ��������� ������ �������������� � ����������
+- `k8s/` - Kubernetes-���������
+- `.github/workflows/ci-cd.yml` - CI/CD pipeline � GitHub Actions
+
+## 2. CI/CD � GitHub Actions
+
+���� pipeline:
+- `.github/workflows/ci-cd.yml`
+
+### 2.1 ����� �����������
+- �� ������ `push` � ����� `main` � `master`
+- �� ������ `pull_request`
+
+### 2.2 ��� ������ CI
+Job `build-and-test`:
+1. Checkout �����������
+2. ��������� JDK 21 (`actions/setup-java`)
+3. ��������� Gradle (`gradle/actions/setup-gradle`)
+4. ������ ������ � ������:
+   - `gradle --no-daemon clean build`
+5. ���������� ���������� � ��������:
+   - `build/reports/tests`
+   - `build/reports/jacoco`
+
+### 2.3 ��� ������ CD
+Job `docker-image` (����������� ������ �� push � `main/master`):
+1. ������ Docker image �� ���� `Dockerfile`
+2. ����� � GitHub Container Registry (`ghcr.io`)
+3. ��������� ����� (`branch`, `sha`, `latest` ��� default branch)
+4. Push ������ � GHCR:
+   - `ghcr.io/<owner>/<repo>`
+
+### 2.4 ��� ����� � �����������
+- GitHub Actions ������ ���� ��������
+- ���������� ������������ `GITHUB_TOKEN` (������������ ��� push � GHCR)
+- � `permissions` workflow ��� ����������:
+  - `contents: read`
+  - `packages: write`
+
+## 3. ��������� ������ ����� Docker Compose
+
+�������:
+```bash
+docker compose up -d --build
+```
+
+����������� �������:
+- `postgres` (5432)
+- `keycloak` (9090 -> 8080 � ����������)
+- `app` (9080)
+
+���������:
+```bash
+docker compose down
+```
+
+## 4. ��������� ������ � Kubernetes
+
+### 4.1 ��������������� ����������
+- ���������� `kubectl`
+- ��������� �������: Docker Desktop Kubernetes / Minikube / Kind
+- ������ � �������� ����������� ��������:
+```bash
+kubectl cluster-info
+```
+
+### 4.2 ������ ������ ���������� ��� ���������� ��������
+�� ��������� deployment ���������� ���������� �����:
+- `solarlab-app:latest`
+
+������� ��������:
+```bash
+docker build -t solarlab-app:latest .
+```
+
+���� ����������� Minikube, ����� ������� ����� � ��� Docker daemon:
+```bash
+minikube docker-env | Invoke-Expression
+docker build -t solarlab-app:latest .
+```
+
+### 4.3 ���������� ����������
+PowerShell:
+```powershell
+.\scripts\k8s-up.ps1
+```
+
+Bash:
+```bash
+bash scripts/k8s-up.sh
+```
+
+��� ����� �������:
+1. Namespace `solarlab`
+2. ConfigMap c ����������� ����������
+3. Secret � ��������
+4. Deployments: `postgres`, `keycloak`, `app`
+5. Services: `postgres` (ClusterIP), `keycloak` (NodePort), `app` (NodePort)
+
+### 4.4 �������� �������
+```bash
+kubectl get all -n solarlab
+```
+
+�������� ����� ����������:
+```bash
+kubectl logs deploy/app -n solarlab
+```
+
+### 4.5 ������ � ��������
+NodePort �������:
+- ����������: `http://<node-ip>:30080`
+- Keycloak: `http://<node-ip>:30090`
+
+��� Docker Desktop Kubernetes ������ ����� ������������:
+- `http://localhost:30080`
+- `http://localhost:30090`
+
+### 4.6 �������� ��������
+PowerShell:
+```powershell
+.\scripts\k8s-down.ps1
+```
+
+Bash:
+```bash
+bash scripts/k8s-down.sh
+```
+
+## 5. ������������ ���������� (env-����������)
+
+� `application.yml` ��������� ��������� ���������� ���������:
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI`
+- `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI`
+- `PORT`
+
+��� ��������� ��������� ���������� jar ��������, � Docker � � Kubernetes ��� ��������������.
+
+## 6. ������ ��������� �� ������������
+
+������� �������� � `k8s/02-secrets.yml` � `docker-compose.yml` - **dev-only** (������� ��������).
+��� production ����������:
+- ������� ������� �� ������� Secret Manager
+- �� ������� ������ � Git � �������� ����
+- ������������ ��������� realm/client ��������� Keycloak
